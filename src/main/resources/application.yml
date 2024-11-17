@@ -1,0 +1,50 @@
+server:
+  port: 8082
+spring:
+  main:
+    web-application-type: reactive
+  application:
+    name: logicgateway
+  cloud:
+    gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:3000, http://localhost:8088, http://localhost:8089, http://localhost:8082"
+            allowedMethods: "GET, POST, PUT, DELETE"
+            allowedHeaders: "Authorization, Content-Type"
+            allowCredentials: true
+      routes:
+        - id: ${gateway.route.jwt.id}
+          uri: ${gateway.route.jwt.uri}
+          predicates:
+            - Path=${gateway.route.jwt.path}
+          filters:
+            - name: CustomLoggingFilterFactory
+            - RewritePath=/jwt/(?<segment>.*), /$\{segment}
+
+        - id: ${gateway.route.mailing.id}
+          uri: ${gateway.route.mailing.uri}
+          predicates:
+            - Path=${gateway.route.mailing.path}
+          filters:
+            - name: CustomLoggingFilterFactory
+            - RewritePath=/mailing/(?<segment>.*), /$\{segment}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      enabled: true
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
+    org.springframework.cloud.gateway.filter: TRACE  # Enable TRACE level for Gateway filters
+    org.springframework.web.reactive.function.client.ExchangeFunctions: TRACE  # To see full request/response detail
