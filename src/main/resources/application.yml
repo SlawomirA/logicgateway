@@ -31,6 +31,14 @@ spring:
             - name: CustomLoggingFilterFactory
             - RewritePath=/mailing/(?<segment>.*), /$\{segment}
 
+        - id: ${gateway.route.predictions.id}
+          uri: ${gateway.route.predictions.uri}
+          predicates:
+            - Path=${gateway.route.predictions.path}
+          filters:
+            - name: CustomLoggingFilterFactory
+            - RewritePath=/predictions/(?<segment>.*), /$\{segment}
+
 management:
   endpoints:
     web:
